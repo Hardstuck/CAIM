@@ -90,14 +90,14 @@ def toTFIDF(client, index, file_id):
     max_freq = max([f for _, f in file_tv])
 
     dcount = doc_count(client, index)
+    
     terms = []
     tfidfw = []
+    
     for (t, w),(_, df) in zip(file_tv, file_df):
-        #
         terms.append(t)
         tfidfw.append((w/max_freq)*(np.log(dcount/df)))
-        #
-        pass
+        
     return list(zip(terms, normalize(tfidfw)))
 
 def print_term_weigth_vector(twv):
@@ -106,11 +106,8 @@ def print_term_weigth_vector(twv):
     :param twv:
     :return:
     """
-    #
     for (a, b) in twv:
         print(a + " " + str(b) + "\n")
-    #
-    pass
 
 
 def normalize(tw):
@@ -138,27 +135,20 @@ def cosine_similarity(tw1, tw2):
     #    suma += d1*d2
     #
     #return suma
-    i = 0
-    j = 0
-    suma = 0
-    d1 = 0
-    d2 = 0
-    while (i < len(list(tw1)) and j < len(list(tw2))):
-        if (tw1[i][0] == tw2[j][0]):
-            suma += tw1[i][1] * tw2[j][1]
-            d1 += tw1[i][1] * tw1[i][1]
-            d2 += tw2[i][1] * tw2[i][1]
-            j += 1
-            i += 1
-        elif (tw1[i][0] > tw2[j][0]):
-            j += 1
+    sizetw1, sizetw2 = (len(list(tw1)), len(list(tw2)))
+    indextw1, indextw2, suma = (0,0,0)
+    
+    while indextw1 < sizetw1 and indextw2 < sizetw2:
+        if tw1[indextw1][0] == tw2[indextw2][0]:
+            suma += tw1[indextw1][1] * tw2[indextw2][1]
+            indextw1 += 1
+            indextw2 += 1
+        elif tw1[indextw1][0] > tw2[indextw2][0]:
+            indextw2 += 1
         else :
-            i += 1
-
-    if (suma == 0):
-        return 0
-    else:
-        return suma/(np.sqrt(d1) * np.sqrt(d2))
+            indextw1 += 1
+            
+    return suma
 
 def doc_count(client, index):
     """

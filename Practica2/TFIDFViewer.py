@@ -95,10 +95,10 @@ def toTFIDF(client, index, file_id):
     tfidfw = []
     
     for (t, w),(_, df) in zip(file_tv, file_df):
-        terms.append(t)
-        tfidfw.append((w/max_freq)*(np.log(dcount/df)))
+        terms.append(t)                                             #List of term
+        tfidfw.append((w/max_freq)*(np.log(dcount/df)))             #List of weight 
         
-    return list(zip(terms, normalize(tfidfw)))
+    return list(zip(terms, normalize(tfidfw)))                      #normalize the list of weight 
 
 def print_term_weigth_vector(twv):
     """
@@ -107,7 +107,7 @@ def print_term_weigth_vector(twv):
     :return:
     """
     for (a, b) in twv:
-        print(a + " " + str(b) + "\n")
+        print(a + " " + str(b) + "\n")                              #Prints the term vector and the correspondig weights
 
 
 def normalize(tw):
@@ -129,23 +129,17 @@ def cosine_similarity(tw1, tw2):
     :param tw2:
     :return:
     """
-    #
-    #suma = 0
-    #for (_, [1),(_, d2) in zip(tw1, tw2):
-    #    suma += d1*d2
-    #
-    #return suma
+    
     sizetw1, sizetw2 = (len(list(tw1)), len(list(tw2)))
     indextw1, indextw2, suma = (0,0,0)
-    
-    while indextw1 < sizetw1 and indextw2 < sizetw2:
-        if tw1[indextw1][0] == tw2[indextw2][0]:
-            suma += tw1[indextw1][1] * tw2[indextw2][1]
+    while indextw1 < sizetw1 and indextw2 < sizetw2:                #For merge the two list in one
+        if tw1[indextw1][0] == tw2[indextw2][0]:                    #Terms are equals, compute the cosine-similarity
+            suma += tw1[indextw1][1] * tw2[indextw2][1]         
             indextw1 += 1
             indextw2 += 1
-        elif tw1[indextw1][0] > tw2[indextw2][0]:
+        elif tw1[indextw1][0] > tw2[indextw2][0]:                   #Different terms
             indextw2 += 1
-        else :
+        else :                                                      #Different terms
             indextw1 += 1
             
     return suma

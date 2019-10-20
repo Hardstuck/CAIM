@@ -98,7 +98,7 @@ def toTFIDF(client, index, file_id):
         terms.append(t)                                             #List of term
         tfidfw.append((w/max_freq)*(np.log(dcount/df)))             #List of weight 
         
-    return list(zip(terms, normalize(tfidfw)))                      #normalize the list of weight 
+    return list(zip(terms, normalize(tfidfw)))                      #return zip of terms and normalized weight vector
 
 def print_term_weigth_vector(twv):
     """
@@ -117,9 +117,7 @@ def normalize(tw):
     :param tw:
     :return:
     """
-    #
-    #
-    return tw/np.sqrt(sum([x**2 for x in tw]))
+    return tw/np.sqrt(sum([x**2 for x in tw])) #return directly the normalized vector of tw by diving each element of tw by its norm
 
 
 def cosine_similarity(tw1, tw2):
@@ -133,13 +131,13 @@ def cosine_similarity(tw1, tw2):
     sizetw1, sizetw2 = (len(list(tw1)), len(list(tw2)))
     indextw1, indextw2, suma = (0,0,0)
     while indextw1 < sizetw1 and indextw2 < sizetw2:                #For merge the two list in one
-        if tw1[indextw1][0] == tw2[indextw2][0]:                    #Terms are equals, compute the cosine-similarity
+        if tw1[indextw1][0] == tw2[indextw2][0]:                    #Terms are equals, compute the cosine-similarity and increase both iterators.
             suma += tw1[indextw1][1] * tw2[indextw2][1]         
             indextw1 += 1
             indextw2 += 1
-        elif tw1[indextw1][0] > tw2[indextw2][0]:                   #Different terms
+        elif tw1[indextw1][0] > tw2[indextw2][0]:                   #Different terms, first is bigger than second. Increment second iterator.
             indextw2 += 1
-        else :                                                      #Different terms
+        else :                                                      #Different terms, second is bigger than first. Increment first iterator.
             indextw1 += 1
             
     return suma

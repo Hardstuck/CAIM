@@ -29,6 +29,7 @@ import argparse
 import numpy as np
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.query import Q
+import operator
 
 
 __author__ = 'bejar'
@@ -52,7 +53,7 @@ def document_term_vector(client, index, id):
     return sorted(file_td.items()), sorted(file_df.items())
 
 
-def toTFIDF(client, index, file_id, query):
+def toTFIDF(client, index, file_id):
     # Get document terms frequency and overall terms document frequency
     file_tv, file_df = document_term_vector(client, index, file_id)
     
@@ -63,8 +64,7 @@ def toTFIDF(client, index, file_id, query):
     tfidfw = {}
     
     for (t, w),(_, df) in zip(file_tv, file_df):
-        if t in query:
-            tfidfw[t] = ((w/max_freq)*(np.log(dcount/df)))
+        tfidfw[t] = ((w/max_freq)*(np.log(dcount/df)))
         
     return tfidfw #dictionary of terms and weights
 
@@ -79,8 +79,9 @@ if __name__ == '__main__':
     
     #parameters
     nrounds = 5
-    alpha = 0.8
-    beta = 0.2
+    alpha = 0.95
+    beta = 0.05
+    R = 3
 
     index = args.index
     query = args.query
@@ -112,23 +113,26 @@ if __name__ == '__main__':
                         
                 print(query_dict)
                 
-                sumDocs = {t: 0.0 for t in set(query)}
+                sumDocs = {}
                 
                     #per cada document calcular el seu TFIDF
                 for r in response:
                     #getting the weights of every document
-                    file_tw = toTFIDF(client, index, r.meta.id, set(query_dict))
+                    file_tw = toTFIDF(client, index, r.meta.id)
                     #sumDocs(t) = actualweight(t) + termweightinD_i(t)
-                    sumDocs = {t: sumDocs.get(t,0) + file_tw.get(t,0) for t in set(file_tw)}
+                    sumDocs = {t: sumDocs.get(t,0) + file_tw.get(t,0) for t in set(file_tw) | set(sumDocs)}
                         
                 #compute beta*(d_1 + ... + d_2)/k
                 sumDocs = {t: beta*sumDocs.get(t,0)/nhits for t in set(sumDocs)} #beta * vector de documents / K
                 oldQuery = {t: alpha*query_dict.get(t,0) for t in set(query_dict)} #alpha * query
-                newQuery = {t: sumDocs.get(t,0) + oldQuery.get(t,0) for t in set(query_dict)} #newquery = sumDocs + oldquery
+                newQuery = {t: sumDocs.get(t,0) + oldQuery.get(t,0) for t in set(oldQuery)|set(sumDocs)} #newquery = sumDocs + oldquery
+                
+                newQuery = sorted(newQuery.items(), key=operator.itemgetter(1), reverse=True)
+                newQuery = newQuery[:R]
                 
                 query = []
-                for t in set(newQuery):
-                    query.append(t+'^'+ str(newQuery.get(t,0)))
+                for (term, value) in newQuery:
+                    query.append(term + '^' + str(value))
                 
                 print(query)
                 

@@ -50,7 +50,7 @@ def document_term_vector(client, index, id):
         for t in termvector['term_vectors']['text']['terms']:
             file_td[t] = termvector['term_vectors']['text']['terms'][t]['term_freq']
             file_df[t] = termvector['term_vectors']['text']['terms'][t]['doc_freq']
-    return sorted(file_td.items()), sorted(file_df.items())
+    return file_td.items(), file_df.items()
 
 
 def toTFIDF(client, index, file_id):
